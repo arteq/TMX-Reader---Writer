@@ -1,0 +1,1 @@
+Voir index.php dans le dossier demo pour une démonstration de l'utilisation de classe.

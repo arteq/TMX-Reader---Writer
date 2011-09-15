@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<tmx version="1.4">
+	<body>
+		<tu tuid="test1">
+			<tuv xml:lang="en_UK">
+				<seg>My text</seg>
+			</tuv>
+		</tu>
+		<tu tuid="test2">
+			<tuv xml:lang="en_UK">
+				<seg>My second text</seg>
+			</tuv>
+			<tuv xml:lang="fr_FR">
+				<seg>Mon second texte</seg>
+			</tuv>
+		</tu>
+	</body>
+</tmx>
