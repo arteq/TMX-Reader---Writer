@@ -207,8 +207,9 @@ class Tmx{
 	 * @param  string $value
      * @return Tmx
      */
-	public function set($tuid, $xmlLang, $value){
-		$this->_data[$tuid][$xmlLang] = $value;
+	public function set($tuid, $xmlLang = false, $value = false){
+		if(is_array($tuid)) return $this->setArray($tuid);
+		if($xmlLang != false && $value != false) $this->_data[$tuid][$xmlLang] = $value;
 		return $this;
 	}
 	
@@ -224,6 +225,29 @@ class Tmx{
 				if(count($_data) > 2){
 					$this->set($_data[0], $_data[1], $_data[2]);
 				}
+			}
+		}
+		return $this;
+	}
+	
+	/**
+	 * Méthode permettant de supprimer une traduction
+     *
+     * @param  string $tuid
+     * @param  string $xmlLang
+     * @return Tmx
+     */
+	public function delete($tuid, $xmlLang = false){
+		if($xmlLang){
+			if(isset($this->_data[$tuid]) && isset($this->_data[$tuid][$xmlLang])){
+				unset($this->_data[$tuid][$xmlLang]);
+				if(empty($this->_data[$tuid])){
+					unset($this->_data[$tuid]);
+				}
+			}
+		}else{
+			if(isset($this->_data[$tuid])){
+				unset($this->_data[$tuid]);
 			}
 		}
 		return $this;
