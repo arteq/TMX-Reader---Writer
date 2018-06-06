@@ -152,14 +152,14 @@ class Tmx
 		$reader = new \XMLReader();
 		$reader->open($this->_file, $encodage);
 		while($reader->read()){
-			if($reader->nodeType == XMLReader::ELEMENT){
+			if($reader->nodeType == \XMLReader::ELEMENT){
 				switch($reader->localName){
 					case 'tu': $tuid = $reader->getAttribute('tuid'); break;
 					case 'tuv': $xmlLang = $reader->xmlLang; break;
 					case 'seg':
 						if($reader->read()){
 							if(
-								($reader->nodeType == XMLReader::TEXT || $reader->nodeType == XMLReader::CDATA)
+								($reader->nodeType == \XMLReader::TEXT || $reader->nodeType == \XMLReader::CDATA)
 								&& $tuid && $xmlLang
 							){
 								$this->_data[$tuid][$xmlLang] = $reader->value;
@@ -206,7 +206,7 @@ class Tmx
 			$writer->writeAttribute('tuid', $tuid);
 			if (isset($tuvs['_attributes']))
 			{
-				foreach ($tucs['_attributes'] as $attrName => $attrValue)
+				foreach ($tuvs['_attributes'] as $attrName => $attrValue)
 				{
 					$writer->writeAttribute($attrName, $attrValue);
 				}
@@ -260,7 +260,7 @@ class Tmx
 		if (!isset($this->_data[$tuid]))
 			throw new \Exception('No such tuid element.');
 
-		$_data[$tuid]['_attributes'][$name] = $value;
+		$this->_data[$tuid]['_attributes'][$name] = $value;
 		return $this;
 	}
 
