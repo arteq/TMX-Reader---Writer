@@ -1,0 +1,20 @@
+{
+	"name": "arteq/tmx-reader-writer",
+	"keywords": ["tmx", "i18n"],
+	"authors": [
+		{
+			"name": "Maxime Maupeu",
+			"email": "maxime.maupeu@gmail.com"
+		},
+		{
+			"name": "Artur Grącki",
+			"email": "arteq@arteq.org"
+		}
+	],
+	"license": "MIT",
+	"autoload": {
+		"psr-4": {
+			"ArteQ\\CSX\\TMX\\": "src"
+		}
+	}
+}
