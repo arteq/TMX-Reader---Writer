@@ -52,7 +52,7 @@ class Tmx
 	private $_creation = false;
 
 	/**
-     * Mode debug (retour d'exceptions)
+     * Mode debug (retour d'\Exceptions)
      *
      * @var boolean
      */
@@ -91,10 +91,10 @@ class Tmx
      * @param  boolean $create
 	 * @param  null|string $encodage
      * @param  boolean $debug
-     * @throws Exception si l'extension libxml n'est pas activée dans PHP, nécessaire pour XMLReader et XMLWriter
-     * @throws Exception si le fichier n'est accessible en écriture
-     * @throws Exception si le répertoire lors de la création d'un fichier n'est pas accessible en écriture
-     * @throws Exception si le fichier n'existe pas
+     * @throws \Exception si l'extension libxml n'est pas activée dans PHP, nécessaire pour XMLReader et XMLWriter
+     * @throws \Exception si le fichier n'est accessible en écriture
+     * @throws \Exception si le répertoire lors de la création d'un fichier n'est pas accessible en écriture
+     * @throws \Exception si le fichier n'existe pas
      * @return boolean
      */
 	public function __construct($file, $create = false, $encodage = null, $debug = false, $config = []){
@@ -103,13 +103,13 @@ class Tmx
 
 		if(!class_exists('XMLReader') || !class_exists('XMLWriter')){
 			if($this->_debug)
-				throw new Exception('PHP extension libxml is required : http://www.php.net/manual/fr/book.libxml.php');
+				throw new \Exception('PHP extension libxml is required : http://www.php.net/manual/fr/book.libxml.php');
 			else return false;
 		}
 		if(file_exists($file)){
 			if(!is_readable($file)){
 				if($this->_debug)
-					throw new Exception('File exist but not readable.');
+					throw new \Exception('File exist but not readable.');
 				return false;
 			}
 			$this->_file = $file;
@@ -120,7 +120,7 @@ class Tmx
 			}
 			if(!is_writable($parent)){
 				if($this->_debug)
-					throw new Exception('Directory exist but not writable.');
+					throw new \Exception('Directory exist but not writable.');
 				return false;
 			}
 			 @fopen($file, 'w');
@@ -129,7 +129,7 @@ class Tmx
 			$this->_creation = true;
 		}else{
 			if($this->_debug)
-				throw new Exception('File not exist.');
+				throw new \Exception('File not exist.');
 			return false;
 		}
 		return true;
@@ -139,14 +139,14 @@ class Tmx
      * Méthode permettant de lire le fichier et charger les traductions
      *
      * @param  null|string $encodage
-     * @throws Exception si le fichier n'existe pas
+     * @throws \Exception si le fichier n'existe pas
      * @return Tmx
      */
 	private function read($encodage = null){
 		if($encodage === null) $encodage = self::ENCODAGE;
 		if($this->_file === null){
 			if($this->_debug)
-				throw new Exception('No file.');
+				throw new \Exception('No file.');
 			else return false;
 		}
 		$reader = new XMLReader();
@@ -177,13 +177,13 @@ class Tmx
 	 * Méthode d'écrire dans un fichier TMX et de l'enregistrer
      *
      * @param  null|string $encodage
-     * @throws Exception si le fichier n'existe pas
+     * @throws \Exception si le fichier n'existe pas
      * @return Tmx
      */
 	public function write($encodage = null){
 		if($this->_file === null){
 			if($this->_debug)
-				throw new Exception('No file.');
+				throw new \Exception('No file.');
 			else return false;
 		}
 		if($encodage === null) $encodage = self::ENCODAGE;
@@ -253,14 +253,15 @@ class Tmx
 	 * @param string $tuid
 	 * @param string $name
 	 * @param string $value
-	 * @throws Exception when no 'tu' element in data array for given $tuid
+	 * @throws \Exception when no 'tu' element in data array for given $tuid
 	 */ 
 	public function setAttribute($tuid, $name, $value)
 	{
-		if (!isset($_data[$tuid]))
-			throw new Exception('No such tuid element.');
+		if (!isset($this->_data[$tuid]))
+			throw new \Exception('No such tuid element.');
 
 		$_data[$tuid]['_attributes'][$name] = $value;
+		return $this;
 	}
 
 	/**
