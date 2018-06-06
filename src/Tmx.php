@@ -253,14 +253,12 @@ class Tmx
 	 * @param string $tuid
 	 * @param string $name
 	 * @param string $value
-	 * @throws \Exception when no 'tu' element in data array for given $tuid
 	 */ 
 	public function setAttribute($tuid, $name, $value)
 	{
-		if (!isset($this->_data[$tuid]))
-			throw new \Exception('No such tuid element.');
-
-		$this->_data[$tuid]['_attributes'][$name] = $value;
+		if (isset($this->_data[$tuid]))
+			$this->_data[$tuid]['_attributes'][$name] = $value;
+		
 		return $this;
 	}
 
