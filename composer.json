@@ -14,7 +14,7 @@
 	"license": "MIT",
 	"autoload": {
 		"psr-4": {
-			"ArteQ\\CSX\\TMX\\": "src"
+			"ArteQ\\CSX\\": "src"
 		}
 	}
 }

@@ -13,7 +13,7 @@
  * @link       https://github.com/Stormfaint
  */
 
-namespace ArteQ\CSX\TMX;
+namespace ArteQ\CSX;
 
 class Tmx 
 {
