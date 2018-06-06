@@ -149,7 +149,7 @@ class Tmx
 				throw new \Exception('No file.');
 			else return false;
 		}
-		$reader = new XMLReader();
+		$reader = new \XMLReader();
 		$reader->open($this->_file, $encodage);
 		while($reader->read()){
 			if($reader->nodeType == XMLReader::ELEMENT){
@@ -187,7 +187,7 @@ class Tmx
 			else return false;
 		}
 		if($encodage === null) $encodage = self::ENCODAGE;
-		$writer = new XMLWriter();
+		$writer = new \XMLWriter();
 		$writer->openMemory();
 		$writer->startDocument(self::DOCUMENT, $encodage);
 		$writer->startElement('tmx');
