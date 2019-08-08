@@ -45,6 +45,12 @@ class Tmx
 	];
 
 	/**
+	 * Additional header properties
+	 * @var array
+	 */ 
+	private $headerProps = [];
+
+	/**
      * Contexte : fichier existant ou non (création)
      *
      * @var boolean
@@ -123,7 +129,7 @@ class Tmx
 					throw new \Exception('Directory exist but not writable.');
 				return false;
 			}
-			 @fopen($file, 'w');
+			@fopen($file, 'w');
 			@chmod($this->_file, 0755);
 			$this->_file = $file;
 			$this->_creation = true;
@@ -133,6 +139,16 @@ class Tmx
 			return false;
 		}
 		return true;
+	}
+
+	/**
+	 * Set additional header properties
+	 * 
+	 * @param array
+	 */ 
+	public function setHeaderProperties($props)
+	{
+		$this->headerProps = $props;
 	}
 
 	/**
@@ -194,12 +210,22 @@ class Tmx
 		$writer->writeAttribute('version', self::VERSION);
 		$writer->setIndentString("\t");
 		$writer->setIndent(true);
+
 		$writer->startElement('header');
 		foreach ($this->_config as $key => $value)
 		{
 			$writer->writeAttribute($key, $value);			
-		}		
+		}
+
+		foreach ($this->headerProps as $key => $value)
+		{
+			$writer->startElement('prop');
+			$writer->writeAttribute('type', $key);
+			$writer->text($value);
+			$writer->endElement();
+		}
 		$writer->endElement();
+
 		$writer->startElement('body');
 		foreach($this->_data as $tuid => $tuvs){
 			$writer->startElement('tu');
@@ -212,6 +238,19 @@ class Tmx
 				}
 				unset($tuvs['_attributes']);
 			}
+
+			if (isset($tuvs['_properties']))
+			{
+				foreach ($tuvs['_properties'] as $propType => $propValue)
+				{
+					$writer->startElement('prop');
+					$writer->writeAttribute('type', $propType);
+					$writer->text($propValue);
+					$writer->endElement();
+				}
+				unset($tuvs['_properties']);
+			}
+
 			foreach($tuvs as $xmlLang => $value){
 				$writer->startElement('tuv');
 				$writer->writeAttribute('xml:lang', $xmlLang);
@@ -256,11 +295,27 @@ class Tmx
 	 */ 
 	public function setAttribute($tuid, $name, $value)
 	{
-		if (isset($this->_data[$tuid]))
-			$this->_data[$tuid]['_attributes'][$name] = $value;
+		if (!isset($this->_data[$tuid]))
+			throw new \Exception('No such tuid element: '.$tuid);
+		$this->_data[$tuid]['_attributes'][$name] = $value;
 		
 		return $this;
 	}
+
+	/**
+	 * Add additional properties to 'tu' element
+	 * 
+	 * @param string $tuid
+	 * @param string $type
+	 * @param string $value
+	 */ 
+	public function setProperty($tuid, $type, $value)
+	{
+		if (isset($this->_data[$tuid]))
+			$this->_data[$tuid]['_properties'][$type] = $value;
+		
+		return $this;
+	}	
 
 	/**
 	 * Méthode permettant d'ajouter une ou plusieurs traductions à l'aide d'un tableau
