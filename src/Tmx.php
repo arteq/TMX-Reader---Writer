@@ -5,8 +5,8 @@
  * La classe permet de lire, de modifier et créer un fichier de traduction au format TMX en PHP
  *
  * @author     Artur Grącki <arteq@arteq.org>
- * @version    1.1.0
- * @link       https://github.com/arteq/TMX-reader-writer
+ * @version    1.1.1
+ * @link       https://github.com/arteq/tmx-reader-writer
  * 
  * @author     Maxime Maupeu <maxime.maupeu@gmail.com>
  * @version    1.0
@@ -38,7 +38,7 @@ class Tmx
 	private $_config = [
 		'adminlang' => 'en',
 		'creationtool' => 'TMX reader-writer',
-		'creationtoolversion' => '1.1.0.',
+		'creationtoolversion' => '1.1.1',
 		'datatype' => 'xml',
 		'o-tmf' => 'XLIFF',
 		'segtype' => 'block',
@@ -56,13 +56,6 @@ class Tmx
      * @var boolean
      */
 	private $_creation = false;
-
-	/**
-     * Mode debug (retour d'\Exceptions)
-     *
-     * @var boolean
-     */
-	private $_debug = false;
 
 	/**
      * Version par défaut d'XML utilisée
@@ -96,49 +89,44 @@ class Tmx
      * @param  string $srcLang
      * @param  boolean $create
 	 * @param  null|string $encodage
-     * @param  boolean $debug
      * @throws \Exception si l'extension libxml n'est pas activée dans PHP, nécessaire pour XMLReader et XMLWriter
      * @throws \Exception si le fichier n'est accessible en écriture
      * @throws \Exception si le répertoire lors de la création d'un fichier n'est pas accessible en écriture
      * @throws \Exception si le fichier n'existe pas
      * @return boolean
      */
-	public function __construct($file, $create = false, $encodage = null, $debug = false, $config = []){
-		$this->_debug = $debug;
+	public function __construct($file, $create = false, $encodage = null, $config = [])
+	{
 		$this->_config = array_merge($this->_config, $config);
 
-		if(!class_exists('XMLReader') || !class_exists('XMLWriter')){
-			if($this->_debug)
-				throw new \Exception('PHP extension libxml is required : http://www.php.net/manual/fr/book.libxml.php');
-			else return false;
-		}
-		if(file_exists($file)){
-			if(!is_readable($file)){
-				if($this->_debug)
-					throw new \Exception('File exist but not readable.');
-				return false;
-			}
-			$this->_file = $file;
-			$this->read($encodage);
-		}elseif($create){
-			if(!$parent = trim(substr_replace($file . ' ', '', strripos($file, '/'), -1))){
+		if (!class_exists('XMLReader') || !class_exists('XMLWriter'))
+			throw new \Exception('PHP extension libxml is required : http://www.php.net/manual/fr/book.libxml.php');
+
+		if ($create)
+		{
+			if (!$parent = trim(substr_replace($file . ' ', '', strripos($file, '/'), -1)))
 				$parent = dirname(__FILE__);
-			}
-			if(!is_writable($parent)){
-				if($this->_debug)
-					throw new \Exception('Directory exist but not writable.');
-				return false;
-			}
+
+			if (!is_writable($parent))
+				throw new \Exception('Directory exist but not writable.');
+
 			@fopen($file, 'w');
 			@chmod($this->_file, 0755);
 			$this->_file = $file;
 			$this->_creation = true;
-		}else{
-			if($this->_debug)
-				throw new \Exception('File not exist.');
-			return false;
 		}
-		return true;
+		elseif (file_exists($file))
+		{
+			if (!is_readable($file))
+				throw new \Exception('File exist but not readable.');
+
+			$this->_file = $file;
+			$this->read($encodage);
+		}
+		else
+		{
+			throw new \Exception('File not exist.');
+		}
 	}
 
 	/**
@@ -158,33 +146,39 @@ class Tmx
      * @throws \Exception si le fichier n'existe pas
      * @return Tmx
      */
-	private function read($encodage = null){
-		if($encodage === null) $encodage = self::ENCODAGE;
-		if($this->_file === null){
-			if($this->_debug)
-				throw new \Exception('No file.');
-			else return false;
-		}
+	private function read($encodage = null)
+	{
+		if ($encodage === null) 
+			$encodage = self::ENCODAGE;
+
+		if ($this->_file === null)
+			throw new \Exception('No file.');
+
 		$reader = new \XMLReader();
 		$reader->open($this->_file, $encodage);
-		while($reader->read()){
-			if($reader->nodeType == \XMLReader::ELEMENT){
-				switch($reader->localName){
+		while ($reader->read())
+		{
+			if ($reader->nodeType == \XMLReader::ELEMENT)
+			{
+				switch ($reader->localName)
+				{
 					case 'tu': $tuid = $reader->getAttribute('tuid'); break;
 					case 'tuv': $xmlLang = $reader->xmlLang; break;
 					case 'seg':
-						if($reader->read()){
-							if(
-								($reader->nodeType == \XMLReader::TEXT || $reader->nodeType == \XMLReader::CDATA)
+						if ($reader->read())
+						{
+							if (($reader->nodeType == \XMLReader::TEXT || $reader->nodeType == \XMLReader::CDATA)
 								&& $tuid && $xmlLang
-							){
+							)
+							{
 								$this->_data[$tuid][$xmlLang] = $reader->value;
 							}
 						}
-					break;
+						break;
 				}
 			}
 		}
+
 		$reader->close();
 		return $this;
 	}
@@ -196,13 +190,14 @@ class Tmx
      * @throws \Exception si le fichier n'existe pas
      * @return Tmx
      */
-	public function write($encodage = null){
-		if($this->_file === null){
-			if($this->_debug)
-				throw new \Exception('No file.');
-			else return false;
-		}
-		if($encodage === null) $encodage = self::ENCODAGE;
+	public function write($encodage = null)
+	{
+		if ($this->_file === null)
+			throw new \Exception('No file.');
+
+		if ($encodage === null) 
+			$encodage = self::ENCODAGE;
+
 		$writer = new \XMLWriter();
 		$writer->openMemory();
 		$writer->startDocument(self::DOCUMENT, $encodage);
@@ -224,12 +219,16 @@ class Tmx
 			$writer->text($value);
 			$writer->endElement();
 		}
+
+		// close header
 		$writer->endElement();
 
 		$writer->startElement('body');
-		foreach($this->_data as $tuid => $tuvs){
+		foreach ($this->_data as $tuid => $tuvs)
+		{
 			$writer->startElement('tu');
 			$writer->writeAttribute('tuid', $tuid);
+
 			if (isset($tuvs['_attributes']))
 			{
 				foreach ($tuvs['_attributes'] as $attrName => $attrValue)
@@ -251,24 +250,38 @@ class Tmx
 				unset($tuvs['_properties']);
 			}
 
-			foreach($tuvs as $xmlLang => $value){
+			foreach ($tuvs as $xmlLang => $value)
+			{
 				$writer->startElement('tuv');
 				$writer->writeAttribute('xml:lang', $xmlLang);
 				$writer->writeElement('seg', $value);
 				$writer->endElement();
 			}
+
 			$writer->endElement();
 		}
+
+		// close body
 		$writer->endElement();
+
+		// close tmx
 		$writer->endElement();
+
+		// close xml document
 		$writer->endDocument();
-		if(self::BACKUP && $this->_creation === false){
-			$copy = $this->_file . '.bak';
-			if(self::MULTIBACKUP) $copy .= '.' . time();
+
+		if (self::BACKUP && $this->_creation === false)
+		{
+			$copy = $this->_file.'.bak';
+			if (self::MULTIBACKUP) 
+				$copy .= '.'.time();
+
 			@copy($this->_file, $copy);
 		}
+
 		$file = @fopen($this->_file, 'w');
 		@fwrite($file, $writer->outputMemory(true));
+
 		return $this;
 	}
 
@@ -280,9 +293,14 @@ class Tmx
 	 * @param  string $value
      * @return Tmx
      */
-	public function set($tuid, $xmlLang = false, $value = false){
-		if(is_array($tuid)) return $this->setArray($tuid);
-		if($xmlLang != false && $value != false) $this->_data[$tuid][$xmlLang] = $value;
+	public function set($tuid, $xmlLang = false, $value = false)
+	{
+		if (is_array($tuid)) 
+			return $this->setArray($tuid);
+
+		if ($xmlLang != false && $value != false) 
+			$this->_data[$tuid][$xmlLang] = $value;
+
 		return $this;
 	}
 
@@ -297,6 +315,7 @@ class Tmx
 	{
 		if (!isset($this->_data[$tuid]))
 			throw new \Exception('No such tuid element: '.$tuid);
+
 		$this->_data[$tuid]['_attributes'][$name] = $value;
 		
 		return $this;
@@ -323,14 +342,19 @@ class Tmx
      * @param  array $data
      * @return Tmx
      */
-	public function setArray(array $data){
-		foreach($data as $_data){
-			if(is_array($_data)){
-				if(count($_data) > 2){
+	public function setArray(array $data)
+	{
+		foreach ($data as $_data)
+		{
+			if (is_array($_data))
+			{
+				if (count($_data) > 2)
+				{
 					$this->set($_data[0], $_data[1], $_data[2]);
 				}
 			}
 		}
+
 		return $this;
 	}
 
@@ -341,19 +365,28 @@ class Tmx
      * @param  string $xmlLang
      * @return Tmx
      */
-	public function delete($tuid, $xmlLang = false){
-		if($xmlLang){
-			if(isset($this->_data[$tuid]) && isset($this->_data[$tuid][$xmlLang])){
+	public function delete($tuid, $xmlLang = false)
+	{
+		if ($xmlLang)
+		{
+			if (isset($this->_data[$tuid]) && isset($this->_data[$tuid][$xmlLang]))
+			{
 				unset($this->_data[$tuid][$xmlLang]);
-				if(empty($this->_data[$tuid])){
+
+				if (empty($this->_data[$tuid]))
+				{
 					unset($this->_data[$tuid]);
 				}
 			}
-		}else{
-			if(isset($this->_data[$tuid])){
+		}
+		else
+		{
+			if (isset($this->_data[$tuid]))
+			{
 				unset($this->_data[$tuid]);
 			}
 		}
+
 		return $this;
 	}
 
@@ -365,23 +398,33 @@ class Tmx
      * @param  boolean|string $xmlLang
      * @return boolean|string|array
      */
-	public function get($tuid = false, $xmlLang = false){
-
-		if($xmlLang && $tuid){
-			if(array_key_exists($tuid, $this->_data)){
-				if(array_key_exists($xmlLang, $this->_data[$tuid])){
+	public function get($tuid = false, $xmlLang = false)
+	{
+		if ($xmlLang && $tuid)
+		{
+			if (array_key_exists($tuid, $this->_data))
+			{
+				if (array_key_exists($xmlLang, $this->_data[$tuid]))
+				{
 					return $this->_data[$tuid][$xmlLang];
 				}
+
 				return false;
 			}
+
 			return false;
 		}
-		if($tuid){
-			if(array_key_exists($tuid, $this->_data)){
+
+		if ($tuid)
+		{
+			if (array_key_exists($tuid, $this->_data))
+			{
 				return $this->_data[$tuid];
 			}
+
 			return false;
 		}
+
 		return $this->_data;
 	}
 
@@ -391,15 +434,21 @@ class Tmx
      * @param  string $xmlLang
      * @return array
      */
-	public function getLang($xmlLang){
+	public function getLang($xmlLang)
+	{
 		$data = $this->_data;
-		foreach($data as $_tuid => $_data){
-			foreach($_data as $_xmlLang => $_value){
-				if($_xmlLang != $xmlLang){
+
+		foreach ($data as $_tuid => $_data)
+		{
+			foreach ($_data as $_xmlLang => $_value)
+			{
+				if ($_xmlLang != $xmlLang)
+				{
 					unset($data[$_tuid][$_xmlLang]);
 				}
 			}
 		}
+
 		return $data;
 	}
 }
